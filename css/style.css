@@ -624,11 +624,21 @@ button, input, select, textarea {
   position: relative;
   min-height: calc(100vh - var(--nav-height));
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  justify-content: center;
   padding: clamp(3rem, 7vw, 6.5rem) 0 4rem;
   background-color: var(--color-charcoal-dark);
   overflow: hidden;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  width: 100%;
+}
+
+.hero-container-wrap {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Hero Background Elements */
@@ -660,15 +670,17 @@ button, input, select, textarea {
 }
 
 .hero-technical-coords {
-  position: absolute;
-  top: 24px;
-  right: clamp(1.25rem, 4vw, 3rem);
+  position: relative;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 1.5rem;
   font-family: var(--font-mono);
   font-size: 0.7rem;
   letter-spacing: 0.12em;
   color: var(--text-muted);
-  display: flex;
-  gap: 1.5rem;
+  margin-bottom: 1.25rem;
+  width: 100%;
   z-index: 2;
 }
 
@@ -3654,80 +3666,143 @@ button, input, select, textarea {
 
   /* Hero Section */
   .hero-section {
-    min-height: auto;
-    padding-top: 1.5rem;
-    padding-bottom: 3rem;
+    min-height: auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+    padding-top: 1.5rem !important;
+    padding-bottom: 3.5rem !important;
+    width: 100% !important;
+    overflow-x: hidden !important;
+  }
+
+  .hero-container-wrap {
+    width: 100% !important;
+    max-width: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    padding-left: 1.25rem !important;
+    padding-right: 1.25rem !important;
+    box-sizing: border-box !important;
   }
 
   .hero-technical-coords {
-    position: static;
-    padding: 0;
-    margin-bottom: 1.25rem;
-    flex-wrap: wrap;
-    gap: 0.4rem 1rem;
-    font-size: 0.65rem;
+    position: static !important;
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    justify-content: flex-start !important;
+    padding: 0 !important;
+    margin-bottom: 1rem !important;
+    gap: 0.35rem 0.85rem !important;
+    font-size: 0.65rem !important;
+    width: 100% !important;
+  }
+
+  .hero-coords-item {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 5px !important;
+    font-size: 0.65rem !important;
+    white-space: normal !important;
+  }
+
+  .hero-content-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    gap: 1.5rem !important;
+  }
+
+  .hero-text-col {
+    width: 100% !important;
+    max-width: 100% !important;
   }
 
   .hero-title {
-    font-size: clamp(2rem, 8.5vw, 3rem);
-    line-height: 1.1;
-    margin-bottom: 1rem;
+    font-size: clamp(1.85rem, 8vw, 2.75rem) !important;
+    line-height: 1.1 !important;
+    margin-bottom: 1rem !important;
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
   }
 
   .hero-subtext {
-    font-size: 0.92rem;
-    line-height: 1.55;
-    margin-bottom: 1.5rem;
+    font-size: 0.92rem !important;
+    line-height: 1.55 !important;
+    margin-bottom: 1.5rem !important;
+    max-width: 100% !important;
   }
 
   .hero-status-pill {
-    font-size: 0.65rem;
-    padding: 4px 10px;
-    max-width: 100%;
-    white-space: normal;
-    line-height: 1.4;
-    text-align: left;
-    margin-bottom: 1rem;
+    display: inline-flex !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    font-size: 0.65rem !important;
+    padding: 5px 12px !important;
+    max-width: 100% !important;
+    white-space: normal !important;
+    line-height: 1.4 !important;
+    text-align: left !important;
+    margin-bottom: 1rem !important;
   }
 
   .hero-actions {
-    flex-direction: column;
-    align-items: stretch;
-    width: 100%;
-    gap: 0.75rem;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    width: 100% !important;
+    gap: 0.75rem !important;
   }
 
   .hero-actions .btn {
-    width: 100%;
-    justify-content: center;
+    width: 100% !important;
+    max-width: 100% !important;
+    justify-content: center !important;
+    white-space: normal !important;
+    text-align: center !important;
+    padding: 12px 16px !important;
+    font-size: 0.82rem !important;
+    box-sizing: border-box !important;
   }
 
   .hero-visual-col {
-    width: 100%;
-    max-width: 100%;
-    margin-top: 1rem;
-    gap: 1rem;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-top: 1rem !important;
+    gap: 1rem !important;
   }
 
   .hero-crosshair-canvas {
-    height: 160px;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 160px !important;
+    overflow: hidden !important;
+  }
+
+  .cad-wireframe-svg {
+    width: 100% !important;
+    height: 100% !important;
   }
 
   .hero-spec-card {
-    padding: 1.25rem;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 1.15rem !important;
+    box-sizing: border-box !important;
   }
 
   .spec-grid {
-    grid-template-columns: 1fr 1fr;
-    gap: 0.75rem;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 0.65rem !important;
   }
 
   .spec-item {
-    padding: 8px 10px;
+    padding: 8px 10px !important;
   }
 
   .hero-scroll-indicator {
-    display: none;
+    display: none !important;
   }
 
   /* Manufacturing Key Metrics (Stats) */
@@ -4213,6 +4288,10 @@ button, input, select, textarea {
 
   .stats-grid {
     grid-template-columns: 1fr;
+  }
+
+  .hero-title {
+    font-size: 1.7rem !important;
   }
 
   .brand-logo {
