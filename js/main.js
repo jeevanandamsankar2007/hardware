@@ -102,7 +102,7 @@ function initHeader() {
 function initMobileNav() {
   const toggleBtn = document.querySelector('.mobile-nav-toggle');
   const nav = document.querySelector('.primary-nav');
-  const links = document.querySelectorAll('.nav-link, .nav-cta-btn');
+  const links = document.querySelectorAll('.nav-link, .nav-cta-btn, .story-mode-nav-btn');
 
   if (!toggleBtn || !nav) return;
 
@@ -1389,9 +1389,23 @@ function initMobileBottomDock() {
   updateActiveDock();
 
   dockItems.forEach(item => {
-    item.addEventListener('click', () => {
+    item.addEventListener('click', (e) => {
+      const targetHref = item.getAttribute('href');
+      if (targetHref && targetHref.startsWith('#')) {
+        const targetEl = document.querySelector(targetHref);
+        if (targetEl) {
+          e.preventDefault();
+          const headerOffset = 64;
+          const elementPosition = targetEl.getBoundingClientRect().top;
+          const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+          window.scrollTo({
+            top: offsetPosition,
+            behavior: 'smooth'
+          });
+        }
+      }
       if ('vibrate' in navigator) {
-        try { navigator.vibrate(12); } catch (e) {}
+        try { navigator.vibrate(12); } catch (err) {}
       }
     });
   });
