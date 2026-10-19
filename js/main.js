@@ -15,6 +15,9 @@ document.addEventListener('DOMContentLoaded', () => {
   initContactActions();
   initBackToTop();
   initDynamicYear();
+  initStorytellingMode();
+  initMobileBottomDock();
+  initMobileViewport();
 });
 
 /* --------------------------------------------------------------------------
@@ -1015,3 +1018,395 @@ function initDynamicYear() {
     yearEl.textContent = new Date().getFullYear();
   }
 }
+
+/* --------------------------------------------------------------------------
+   12. INTERACTIVE STORYTELLING MODE ENGINE
+   -------------------------------------------------------------------------- */
+function initStorytellingMode() {
+  const storyChapters = [
+    {
+      id: 0,
+      title: 'Chapter 1: The Raw Ingot & Genesis',
+      shortTitle: '01 // Alloy Genesis',
+      badge: 'CHAPTER 01 // GENESIS',
+      sectionId: 'about',
+      heading: 'Certified Aerospace Metallurgy',
+      narrative: 'Every machine that powers modern civilization starts with raw alloy stock. At FORGEX, certified aerospace 4140, 316 stainless, and titanium billets undergo optical spectrometer verification before ever meeting a cutting tool.',
+      metric: '100% MTR Traceability',
+      unit: 'Raw Ingot Bay 01',
+      speech: 'Chapter One. Alloy Genesis. Every component starts with certified aerospace and industrial metallurgy, verified before cutting for complete traceability.'
+    },
+    {
+      id: 1,
+      title: 'Chapter 2: Sub-Micron 5-Axis Machining',
+      shortTitle: '02 // CNC Milling',
+      badge: 'CHAPTER 02 // CNC MACHINING',
+      sectionId: 'capabilities',
+      heading: '5-Axis Precision Sculpting',
+      narrative: 'Continuous 5-axis CNC machining centers sculpt complex geometries in single setups. Delivering micro-tolerances down to ±0.005mm and mirror surface finishes down to Ra 0.2µm for mission-critical assemblies.',
+      metric: '±0.005mm Tolerance',
+      unit: 'Milling Cell Alpha',
+      speech: 'Chapter Two. Sub-Micron 5-Axis Machining. Multi-axis CNC centers sculpt intricate geometries with five-micron precision and mirror surface finishes.'
+    },
+    {
+      id: 2,
+      title: 'Chapter 3: Cold Forged Fasteners',
+      shortTitle: '03 // Fastener Fleet',
+      badge: 'CHAPTER 03 // HIGH-TENSILE FASTENERS',
+      sectionId: 'products',
+      heading: 'High-Torque Fastener Integrity',
+      narrative: 'Multi-station cold forming lines preserve continuous metallurgical grain flow in fasteners. Rated up to 1040 MPa tensile strength, engineered for extreme vibrations in maritime and heavy energy infrastructure.',
+      metric: '1040 MPa Tensile',
+      unit: 'Heading Fleet 03',
+      speech: 'Chapter Three. Cold Forged Fasteners. Cold-formed metric and imperial bolts engineered for supreme structural strength in harsh operating environments.'
+    },
+    {
+      id: 3,
+      title: 'Chapter 4: Zeiss CMM Zero-Defect Metrology',
+      shortTitle: '04 // Metrology QA',
+      badge: 'CHAPTER 04 // ZERO-DEFECT QA',
+      sectionId: 'quality',
+      heading: 'Zero-Tolerance Verification',
+      narrative: 'Climate-controlled optical metrology cleanrooms equipped with Zeiss Bridge CMMs verify 100% drawing compliance. Full PPAP Level 3 documentation and digital batch heat-treat certificates accompanying every dispatch.',
+      metric: 'Zeiss Bridge CMM (0.1µm)',
+      unit: 'Metrology Clean Lab',
+      speech: 'Chapter Four. Zero-Defect Metrology. Climate-controlled inspection laboratories ensure absolute drawing compliance with full PPAP Level 3 documentation.'
+    },
+    {
+      id: 4,
+      title: 'Chapter 5: Rapid Ingestion & Turnkey RFQ',
+      shortTitle: '05 // RFQ & Dispatch',
+      badge: 'CHAPTER 05 // LOGISTICS & RFQ',
+      sectionId: 'quote',
+      heading: 'Blueprint To Component',
+      narrative: 'Submit your 3D CAD models (STEP, IGES) or 2D technical drawings for automated DFM evaluation. Receive engineer-reviewed quotes within 24 hours and expedited pilot production within 5–10 business days.',
+      metric: '24-Hour RFQ Turnaround',
+      unit: 'Engineering Dispatch',
+      speech: 'Chapter Five. Rapid Ingestion and Turnkey RFQ. Submit your CAD models or prints for rapid design evaluation and expedited component dispatch.'
+    }
+  ];
+
+  let currentChapterIndex = 0;
+  let isStoryActive = false;
+  let isAutoPlaying = true;
+  let isAudioEnabled = true;
+  let autoPlayTimer = null;
+  const CHAPTER_DURATION = 9000;
+
+  // DOM Elements
+  const hud = document.querySelector('#story-hud');
+  const narrativeCard = document.querySelector('#story-narrative-card');
+  const navToggleBtn = document.querySelector('#story-mode-toggle');
+  const navBadge = document.querySelector('#nav-story-badge');
+  const mobileQuickBtn = document.querySelector('#mobile-quick-story-btn');
+  const heroLaunchBtn = document.querySelector('#hero-story-launch-btn');
+  const dockStoryBtn = document.querySelector('#mobile-dock-story-btn');
+
+  const hudTitle = document.querySelector('#story-chapter-title');
+  const hudProgressFill = document.querySelector('#story-progress-fill');
+  const stepDots = document.querySelectorAll('.story-step-dot');
+  const prevBtn = document.querySelector('#story-prev-btn');
+  const nextBtn = document.querySelector('#story-next-btn');
+  const autoPlayBtn = document.querySelector('#story-autoplay-btn');
+  const audioBtn = document.querySelector('#story-audio-btn');
+  const exitBtn = document.querySelector('#story-exit-btn');
+
+  // Narrative Card Elements
+  const cardBadge = document.querySelector('#story-card-badge');
+  const cardHeading = document.querySelector('#story-card-heading');
+  const cardNarrative = document.querySelector('#story-card-narrative');
+  const cardMetric = document.querySelector('#story-card-metric');
+  const cardUnit = document.querySelector('#story-card-unit');
+  const cardMinBtn = document.querySelector('#story-card-min-btn');
+  const cardJumpNextBtn = document.querySelector('#story-jump-next-btn');
+
+  // Web Audio Synthesizer for high-tech industrial feedback
+  let audioCtx = null;
+  function playIndustrialChime(frequencyMultiplier = 1) {
+    if (!isAudioEnabled) return;
+    try {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      const now = audioCtx.currentTime;
+      const osc1 = audioCtx.createOscillator();
+      const osc2 = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+
+      osc1.type = 'sine';
+      osc2.type = 'triangle';
+
+      const baseFreq = 520 * frequencyMultiplier;
+      osc1.frequency.setValueAtTime(baseFreq, now);
+      osc1.frequency.exponentialRampToValueAtTime(baseFreq * 1.5, now + 0.15);
+
+      osc2.frequency.setValueAtTime(baseFreq * 2, now);
+      osc2.frequency.exponentialRampToValueAtTime(baseFreq * 0.75, now + 0.25);
+
+      gain.gain.setValueAtTime(0.001, now);
+      gain.gain.linearRampToValueAtTime(0.08, now + 0.04);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.35);
+
+      osc1.connect(gain);
+      osc2.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      osc1.start(now);
+      osc2.start(now);
+      osc1.stop(now + 0.36);
+      osc2.stop(now + 0.36);
+    } catch (err) {
+      // AudioContext graceful fallback
+    }
+  }
+
+  // SpeechSynthesis voice narration
+  function speakChapter(text) {
+    if (!isAudioEnabled || !('speechSynthesis' in window)) return;
+    try {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 1.02;
+      utterance.pitch = 0.95;
+      utterance.volume = 0.85;
+      const voices = window.speechSynthesis.getVoices();
+      const englishVoice = voices.find(v => v.lang.startsWith('en') && (v.name.includes('Natural') || v.name.includes('Google') || v.name.includes('Male')));
+      if (englishVoice) utterance.voice = englishVoice;
+      window.speechSynthesis.speak(utterance);
+    } catch (e) {}
+  }
+
+  function startStoryMode(initialChapter = 0) {
+    isStoryActive = true;
+    currentChapterIndex = initialChapter;
+    if (hud) hud.classList.add('active');
+    if (narrativeCard) narrativeCard.classList.add('active');
+
+    if (navToggleBtn) {
+      navToggleBtn.classList.add('active');
+      if (navBadge) navBadge.textContent = 'LIVE';
+    }
+    if (mobileQuickBtn) mobileQuickBtn.classList.add('active');
+    if (dockStoryBtn) dockStoryBtn.classList.add('active');
+
+    goToChapter(currentChapterIndex);
+    if (isAutoPlaying) {
+      startAutoPlayTimer();
+    }
+  }
+
+  function exitStoryMode() {
+    isStoryActive = false;
+    clearTimeout(autoPlayTimer);
+    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+
+    if (hud) hud.classList.remove('active');
+    if (narrativeCard) narrativeCard.classList.remove('active');
+
+    if (navToggleBtn) {
+      navToggleBtn.classList.remove('active');
+      if (navBadge) navBadge.textContent = 'OFF';
+    }
+    if (mobileQuickBtn) mobileQuickBtn.classList.remove('active');
+    if (dockStoryBtn) dockStoryBtn.classList.remove('active');
+
+    document.querySelectorAll('.story-step-section').forEach(sec => sec.classList.remove('story-active-step'));
+  }
+
+  function toggleStoryMode() {
+    if (isStoryActive) {
+      exitStoryMode();
+    } else {
+      startStoryMode(0);
+    }
+  }
+
+  function goToChapter(index) {
+    if (index < 0) index = 0;
+    if (index >= storyChapters.length) index = storyChapters.length - 1;
+    currentChapterIndex = index;
+    const chapter = storyChapters[currentChapterIndex];
+
+    playIndustrialChime(1 + (index * 0.15));
+    speakChapter(chapter.speech);
+
+    if (hudTitle) hudTitle.textContent = chapter.title;
+    const progressPercent = ((currentChapterIndex + 1) / storyChapters.length) * 100;
+    if (hudProgressFill) hudProgressFill.style.width = `${progressPercent}%`;
+
+    stepDots.forEach((dot, idx) => {
+      dot.classList.toggle('active', idx === currentChapterIndex);
+    });
+
+    if (cardBadge) cardBadge.textContent = chapter.badge;
+    if (cardHeading) cardHeading.textContent = chapter.heading;
+    if (cardNarrative) cardNarrative.textContent = chapter.narrative;
+    if (cardMetric) cardMetric.textContent = chapter.metric;
+    if (cardUnit) cardUnit.textContent = chapter.unit;
+
+    document.querySelectorAll('.story-step-section').forEach(sec => sec.classList.remove('story-active-step'));
+    const targetSection = document.getElementById(chapter.sectionId);
+    if (targetSection) {
+      targetSection.classList.add('story-active-step');
+      const headerOffset = 90;
+      const elementPosition = targetSection.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
+    }
+
+    if (isAutoPlaying) {
+      startAutoPlayTimer();
+    }
+  }
+
+  function startAutoPlayTimer() {
+    clearTimeout(autoPlayTimer);
+    if (!isAutoPlaying || !isStoryActive) return;
+
+    autoPlayTimer = setTimeout(() => {
+      if (!isStoryActive || !isAutoPlaying) return;
+      if (currentChapterIndex < storyChapters.length - 1) {
+        goToChapter(currentChapterIndex + 1);
+      } else {
+        goToChapter(0);
+      }
+    }, CHAPTER_DURATION);
+  }
+
+  function toggleAutoPlay() {
+    isAutoPlaying = !isAutoPlaying;
+    const pauseIcon = autoPlayBtn?.querySelector('.icon-pause');
+    const playIcon = autoPlayBtn?.querySelector('.icon-play');
+    if (isAutoPlaying) {
+      if (pauseIcon) pauseIcon.style.display = 'block';
+      if (playIcon) playIcon.style.display = 'none';
+      startAutoPlayTimer();
+    } else {
+      clearTimeout(autoPlayTimer);
+      if (pauseIcon) pauseIcon.style.display = 'none';
+      if (playIcon) playIcon.style.display = 'block';
+    }
+  }
+
+  function toggleAudio() {
+    isAudioEnabled = !isAudioEnabled;
+    const soundOn = audioBtn?.querySelector('.icon-sound-on');
+    const soundOff = audioBtn?.querySelector('.icon-sound-off');
+    if (isAudioEnabled) {
+      if (soundOn) soundOn.style.display = 'block';
+      if (soundOff) soundOff.style.display = 'none';
+      playIndustrialChime(1.2);
+    } else {
+      if (soundOn) soundOn.style.display = 'none';
+      if (soundOff) soundOff.style.display = 'block';
+      if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+    }
+  }
+
+  if (navToggleBtn) navToggleBtn.addEventListener('click', toggleStoryMode);
+  if (mobileQuickBtn) mobileQuickBtn.addEventListener('click', toggleStoryMode);
+  if (heroLaunchBtn) heroLaunchBtn.addEventListener('click', () => startStoryMode(0));
+  if (dockStoryBtn) dockStoryBtn.addEventListener('click', toggleStoryMode);
+
+  if (prevBtn) {
+    prevBtn.addEventListener('click', () => {
+      goToChapter(currentChapterIndex > 0 ? currentChapterIndex - 1 : storyChapters.length - 1);
+    });
+  }
+
+  if (nextBtn) {
+    nextBtn.addEventListener('click', () => {
+      goToChapter((currentChapterIndex + 1) % storyChapters.length);
+    });
+  }
+
+  if (cardJumpNextBtn) {
+    cardJumpNextBtn.addEventListener('click', () => {
+      goToChapter((currentChapterIndex + 1) % storyChapters.length);
+    });
+  }
+
+  if (autoPlayBtn) autoPlayBtn.addEventListener('click', toggleAutoPlay);
+  if (audioBtn) audioBtn.addEventListener('click', toggleAudio);
+  if (exitBtn) exitBtn.addEventListener('click', exitStoryMode);
+
+  if (cardMinBtn && narrativeCard) {
+    cardMinBtn.addEventListener('click', () => {
+      narrativeCard.classList.toggle('minimized');
+    });
+  }
+
+  stepDots.forEach((dot, idx) => {
+    dot.addEventListener('click', () => goToChapter(idx));
+  });
+
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && isStoryActive) {
+      exitStoryMode();
+    }
+  });
+}
+
+/* --------------------------------------------------------------------------
+   13. GLASSMORPHIC MOBILE BOTTOM NAVIGATION DOCK
+   -------------------------------------------------------------------------- */
+function initMobileBottomDock() {
+  const dock = document.querySelector('.mobile-bottom-dock');
+  const dockItems = document.querySelectorAll('.mobile-dock-item[data-dock]');
+  if (!dock) return;
+
+  const sectionIds = ['home', 'capabilities', 'products', 'quote'];
+  const sections = sectionIds.map(id => document.getElementById(id)).filter(Boolean);
+
+  function updateActiveDock() {
+    const scrollPos = window.scrollY + window.innerHeight * 0.35;
+    let currentId = 'home';
+
+    sections.forEach(sec => {
+      const top = sec.offsetTop;
+      const height = sec.offsetHeight;
+      if (scrollPos >= top && scrollPos < top + height) {
+        currentId = sec.id;
+      }
+    });
+
+    dockItems.forEach(item => {
+      if (item.getAttribute('data-dock') === currentId) {
+        item.classList.add('active');
+      } else {
+        item.classList.remove('active');
+      }
+    });
+  }
+
+  window.addEventListener('scroll', updateActiveDock, { passive: true });
+  updateActiveDock();
+
+  dockItems.forEach(item => {
+    item.addEventListener('click', () => {
+      if ('vibrate' in navigator) {
+        try { navigator.vibrate(12); } catch (e) {}
+      }
+    });
+  });
+}
+
+/* --------------------------------------------------------------------------
+   14. MOBILE VIEWPORT HEIGHT FIX & SCROLL TUNING
+   -------------------------------------------------------------------------- */
+function initMobileViewport() {
+  function setViewportHeight() {
+    const vh = window.innerHeight * 0.01;
+    document.documentElement.style.setProperty('--vh', `${vh}px`);
+  }
+  setViewportHeight();
+  window.addEventListener('resize', setViewportHeight);
+  window.addEventListener('orientationchange', setViewportHeight);
+}
+
